@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Word Game — GCC Huntsville</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* GCC Brand */
+  --navy:    #1a2d4f;
+  --navy2:   #243d6a;
+  --gold:    #b8922a;
+  --gold-lt: #d4a83a;
+  --cream:   #f5f1e8;
+  --cream2:  #ede8d8;
+  --white:   #ffffff;
+  --text:    #1c1c1c;
+  --muted:   #6b6b6b;
+  --border:  #d0c9b5;
+
+  /* Team colors */
+  --boys:     #1d4ed8;
+  --boys-lt:  #dbeafe;
+  --boys-dk:  #1e3a6e;
+  --girls:    #be185d;
+  --girls-lt: #fce7f3;
+  --girls-dk: #6b0f38;
+
+  --green:    #15803d;
+  --red:      #b91c1c;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Open Sans', system-ui, sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── HEADER BANNER ──────────────────────────────────────── */
+.site-header {
+  width: 100%;
+  background: var(--navy);
+  text-align: center;
+  padding: 18px 20px 14px;
+  border-bottom: 4px solid var(--gold);
+}
+.site-header h1 {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+.site-header .subtitle {
+  font-size: 0.78rem;
+  color: var(--gold-lt);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* ── SETUP SCREEN ───────────────────────────────────────── */
+#setup-screen {
+  width: 100%;
+  max-width: 560px;
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.setup-card {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 30px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 16px rgba(26,45,79,0.10);
+}
+
+.setup-card label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.setup-card input[type="text"],
+.setup-card textarea {
+  width: 100%;
+  padding: 10px 13px;
+  background: var(--cream);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+.setup-card input:focus,
+.setup-card textarea:focus { border-color: var(--navy); background: var(--white); }
+
+.team-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.boys-field:focus { border-color: var(--boys) !important; }
+.girls-field:focus { border-color: var(--girls) !important; }
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.btn {
+  padding: 11px 24px;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.4px;
+}
+.btn:hover  { opacity: 0.88; transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.12); }
+.btn:active { transform: translateY(0); box-shadow: none; }
+
+.btn-start { background: var(--navy); color: var(--white); font-size: 1.05rem; }
+.btn-gold  { background: var(--gold);  color: var(--white); }
+.btn-red   { background: var(--red);   color: var(--white); }
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+}
+.btn-outline:hover { border-color: var(--navy); color: var(--navy); }
+
+.setup-tip {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: center;
+  line-height: 1.6;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.setup-tip strong { color: var(--navy); }
+
+/* ── GAME SCREEN ────────────────────────────────────────── */
+#game-screen {
+  display: none;
+  width: 100%;
+  max-width: 1100px;
+  padding: 0 14px 48px;
+}
+
+.game-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 0 12px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.game-topbar .title-label {
+  flex: 1;
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: 0.5px;
+}
+
+/* ── SCORE BAR ──────────────────────────────────────────── */
+.score-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 14px;
+  align-items: stretch;
+  margin-bottom: 14px;
+}
+
+.team-card {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 18px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border: 2px solid var(--border);
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.team-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+  border-radius: 10px 10px 0 0;
+  transition: background 0.25s;
+}
+#card-0::before { background: var(--boys); }
+#card-1::before { background: var(--girls); }
+
+.team-card.active-boys {
+  border-color: var(--boys);
+  box-shadow: 0 4px 24px rgba(29,78,216,0.18);
+  transform: scale(1.02);
+}
+.team-card.active-girls {
+  border-color: var(--girls);
+  box-shadow: 0 4px 24px rgba(190,24,93,0.18);
+  transform: scale(1.02);
+}
+.team-card.inactive { opacity: 0.52; transform: scale(0.98); }
+
+.team-name {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+.boys-name  { color: var(--boys); }
+.girls-name { color: var(--girls); }
+
+.team-score {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.boys-score  { color: var(--boys); }
+.girls-score { color: var(--girls); }
+
+.team-pts-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+.turn-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-top: 6px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.team-card.active-boys  .badge-boys  { opacity: 1; background: var(--boys-lt);  color: var(--boys); }
+.team-card.active-girls .badge-girls { opacity: 1; background: var(--girls-lt); color: var(--girls); }
+
+/* pts pop */
+.pts-pop {
+  position: absolute;
+  top: 12px; right: 14px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  pointer-events: none;
+  animation: popUp 1.3s ease-out forwards;
+}
+.boys-pop  { color: var(--boys); }
+.girls-pop { color: var(--girls); }
+@keyframes popUp {
+  0%   { opacity: 1; transform: translateY(0) scale(1.2); }
+  70%  { opacity: 0.8; transform: translateY(-44px) scale(1); }
+  100% { opacity: 0; transform: translateY(-60px) scale(0.85); }
+}
+
+/* Center panel */
+.turn-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+.vs-text {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 3px;
+}
+.turn-arrow { font-size: 1.6rem; transition: transform 0.3s; }
+.pass-btn {
+  font-size: 0.72rem;
+  font-family: 'Open Sans', sans-serif;
+  padding: 5px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pass-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ── STATUS BANNER ──────────────────────────────────────── */
+#status-banner {
+  text-align: center;
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  padding: 14px 20px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  display: none;
+  border: 2px solid transparent;
+}
+#status-banner.win  { background: #f0fdf4; color: var(--green); border-color: #86efac; display: block; }
+#status-banner.draw { background: #fefce8; color: #92400e;     border-color: #fde68a; display: block; }
+
+/* ── BLANKS ─────────────────────────────────────────────── */
+.blanks-container {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 22px 22px 18px;
+  min-height: 90px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 6px 10px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 8px rgba(26,45,79,0.06);
+}
+
+.word-group { display: inline-flex; gap: 5px; align-items: flex-end; }
+
+.blank-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 36px;
+}
+.blank-letter {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  height: 40px;
+  line-height: 40px;
+  visibility: hidden;
+}
+.blank-cell.revealed .blank-letter { visibility: visible; }
+.blank-cell.by-boys  .blank-letter { color: var(--boys); }
+.blank-cell.by-girls .blank-letter { color: var(--girls); }
+.blank-line { width: 34px; height: 2.5px; background: var(--navy); border-radius: 2px; }
+
+.punct-cell { display: flex; flex-direction: column; align-items: center; width: 18px; }
+.punct-char {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 1.9rem;
+  font-weight: 400;
+  height: 40px;
+  line-height: 44px;
+  color: var(--muted);
+}
+.space-cell { width: 20px; }
+
+/* ── PANELS shared ──────────────────────────────────────── */
+.panel {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 16px 18px 18px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 8px rgba(26,45,79,0.06);
+}
+.panel-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.3px;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+
+/* ── FREQ GRID ──────────────────────────────────────────── */
+.freq-grid {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 5px;
+}
+.freq-cell {
+  background: var(--cream);
+  border-radius: 6px;
+  padding: 5px 2px 4px;
+  text-align: center;
+  border: 1.5px solid transparent;
+  transition: all 0.15s;
+}
+.fc-letter { font-size: 0.92rem; font-weight: 700; display: block; color: var(--text); }
+.fc-count  { font-size: 0.65rem; display: block; line-height: 1; color: var(--muted); }
+
+.freq-cell.not-in    { opacity: 0.28; }
+.freq-cell.in-puzzle { background: var(--cream2); border-color: var(--navy2); }
+.freq-cell.in-puzzle .fc-count { color: var(--gold); font-weight: 700; }
+
+.freq-cell.scored-boys  { background: var(--boys-lt);  border-color: var(--boys); }
+.freq-cell.scored-boys  .fc-letter { color: var(--boys); }
+.freq-cell.scored-boys  .fc-count  { color: var(--boys); opacity: 0.8; }
+.freq-cell.scored-girls { background: var(--girls-lt); border-color: var(--girls); }
+.freq-cell.scored-girls .fc-letter { color: var(--girls); }
+.freq-cell.scored-girls .fc-count  { color: var(--girls); opacity: 0.8; }
+.freq-cell.missed { background: #fee2e2; border-color: var(--red); }
+.freq-cell.missed .fc-letter { color: var(--red); }
+
+/* ── KEYBOARD ───────────────────────────────────────────── */
+.keyboard-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.key-btn {
+  width: 45px;
+  height: 45px;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--cream);
+  color: var(--navy);
+  transition: all 0.12s;
+}
+.key-btn:hover:not(:disabled) {
+  background: var(--navy);
+  color: var(--white);
+  border-color: var(--navy);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(26,45,79,0.2);
+}
+.key-btn:disabled { cursor: not-allowed; }
+.key-btn.hit-boys  { background: var(--boys-lt);  color: var(--boys);  border-color: var(--boys);  opacity: 0.7; }
+.key-btn.hit-girls { background: var(--girls-lt); color: var(--girls); border-color: var(--girls); opacity: 0.7; }
+.key-btn.missed    { background: #fee2e2; color: var(--red); border-color: #fca5a5; opacity: 0.5; }
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 650px) {
+  .freq-grid  { grid-template-columns: repeat(9, 1fr); }
+  .team-score { font-size: 2.2rem; }
+  .game-topbar .title-label { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Site Header -->
+<div class="site-header">
+  <h1>Grace Community Church</h1>
+  <div class="subtitle">Word Game &nbsp;·&nbsp; Children's Ministry</div>
+</div>
+
+<!-- ═══ SETUP ═══ -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div>
+      <label>Team Names</label>
+      <div class="team-inputs">
+        <input type="text" id="t1-name" class="boys-field"  placeholder="Boys"  maxlength="20">
+        <input type="text" id="t2-name" class="girls-field" placeholder="Girls" maxlength="20">
+      </div>
+    </div>
+    <hr class="divider">
+    <div>
+      <label>Secret Phrase (hidden from students once started)</label>
+      <textarea id="phrase-input" rows="3"
+        placeholder="So the last shall be first, and the first last."
+        autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
+    </div>
+    <button class="btn btn-start" onclick="startGame()">▶ &nbsp;Start Game</button>
+    <p class="setup-tip">
+      <strong>How to score:</strong> Guessing a letter correctly earns points equal to how many times it appears in the phrase. A wrong guess passes the turn to the other team.
+    </p>
+  </div>
+</div>
+
+<!-- ═══ GAME ═══ -->
+<div id="game-screen">
+
+  <div class="game-topbar">
+    <span class="title-label">Grace Community Church — Word Game</span>
+    <button class="btn btn-outline" id="reveal-btn" onclick="revealAnswer()">👁 Reveal Answer</button>
+    <button class="btn btn-red"     onclick="resetGame()">↺ New Game</button>
+  </div>
+
+  <!-- Scores -->
+  <div class="score-bar">
+    <div class="team-card active-boys" id="card-0">
+      <div class="team-name boys-name" id="label-0">Boys</div>
+      <div class="team-score boys-score" id="score-0">0</div>
+      <div class="team-pts-label">points</div>
+      <div class="turn-badge badge-boys">✦ Your Turn</div>
+    </div>
+
+    <div class="turn-center">
+      <div class="vs-text">VS</div>
+      <div class="turn-arrow" id="turn-arrow">⬅️</div>
+      <button class="pass-btn" onclick="passTurn()">Pass Turn →</button>
+    </div>
+
+    <div class="team-card inactive" id="card-1">
+      <div class="team-name girls-name" id="label-1">Girls</div>
+      <div class="team-score girls-score" id="score-1">0</div>
+      <div class="team-pts-label">points</div>
+      <div class="turn-badge badge-girls">✦ Your Turn</div>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div id="status-banner"></div>
+
+  <!-- Blanks -->
+  <div class="blanks-container" id="blanks-container"></div>
+
+  <!-- Freq ref -->
+  <div class="panel">
+    <div class="panel-title">📊 Letter Count Reference &nbsp;—&nbsp; Blue = Boys scored &nbsp;·&nbsp; Pink = Girls scored &nbsp;·&nbsp; Red = Missed</div>
+    <div class="freq-grid" id="freq-grid"></div>
+  </div>
+
+  <!-- Keyboard -->
+  <div class="panel">
+    <div class="panel-title" id="keyboard-label">⌨️ Guess a Letter — Boys' Turn</div>
+    <div class="keyboard-grid" id="keyboard-grid"></div>
+  </div>
+
+</div>
+
+<script>
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+let phrase, letterCounts, guessedLetters, scores, currentTeam, teamNames, gameOver;
+
+// ── Setup ──────────────────────────────────────────────────────
+function startGame() {
+  const raw = document.getElementById('phrase-input').value.trim();
+  if (!raw) { alert('Please enter a phrase!'); return; }
+
+  teamNames = [
+    document.getElementById('t1-name').value.trim() || 'Boys',
+    document.getElementById('t2-name').value.trim() || 'Girls'
+  ];
+
+  phrase         = raw.toUpperCase();
+  letterCounts   = {};
+  guessedLetters = {};
+  scores         = [0, 0];
+  currentTeam    = 0;
+  gameOver       = false;
+
+  for (const ch of phrase) {
+    if (/[A-Z]/.test(ch)) letterCounts[ch] = (letterCounts[ch] || 0) + 1;
+  }
+
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display  = 'block';
+
+  setStatus('', '');
+  document.getElementById('reveal-btn').style.display = 'inline-block';
+  document.getElementById('label-0').textContent = teamNames[0];
+  document.getElementById('label-1').textContent = teamNames[1];
+
+  buildBlanks();
+  buildFreqGrid();
+  buildKeyboard();
+  updateTurnUI();
+}
+
+// ── Build UI ───────────────────────────────────────────────────
+function buildBlanks() {
+  const container = document.getElementById('blanks-container');
+  container.innerHTML = '';
+  const words = phrase.split(' ');
+  words.forEach((word, wi) => {
+    if (wi > 0) {
+      const sp = document.createElement('div');
+      sp.className = 'space-cell';
+      container.appendChild(sp);
+    }
+    const wDiv = document.createElement('div');
+    wDiv.className = 'word-group';
+    for (let i = 0; i < word.length; i++) {
+      const ch = word[i];
+      if (/[A-Z]/.test(ch)) {
+        const cell = document.createElement('div');
+        cell.className = 'blank-cell';
+        cell.dataset.char = ch;
+        const ltr = document.createElement('div');
+        ltr.className = 'blank-letter'; ltr.textContent = ch;
+        const ln = document.createElement('div');
+        ln.className = 'blank-line';
+        cell.appendChild(ltr); cell.appendChild(ln);
+        wDiv.appendChild(cell);
+      } else {
+        const cell = document.createElement('div');
+        cell.className = 'punct-cell';
+        const pc = document.createElement('div');
+        pc.className = 'punct-char'; pc.textContent = ch;
+        cell.appendChild(pc); wDiv.appendChild(cell);
+      }
+    }
+    container.appendChild(wDiv);
+  });
+}
+
+function buildFreqGrid() {
+  const grid = document.getElementById('freq-grid');
+  grid.innerHTML = '';
+  ALPHABET.forEach(letter => {
+    const n    = letterCounts[letter] || 0;
+    const cell = document.createElement('div');
+    cell.className = 'freq-cell ' + (n > 0 ? 'in-puzzle' : 'not-in');
+    cell.id        = 'freq-' + letter;
+    cell.title     = n > 0 ? `"${letter}" appears ${n} time${n>1?'s':''}` : `Not in puzzle`;
+    cell.innerHTML = `<span class="fc-letter">${letter}</span><span class="fc-count">${n > 0 ? '×'+n : '–'}</span>`;
+    grid.appendChild(cell);
+  });
+}
+
+function buildKeyboard() {
+  const grid = document.getElementById('keyboard-grid');
+  grid.innerHTML = '';
+  ALPHABET.forEach(letter => {
+    const btn = document.createElement('button');
+    btn.className = 'key-btn'; btn.textContent = letter; btn.id = 'key-' + letter;
+    btn.addEventListener('click', () => guessLetter(letter));
+    grid.appendChild(btn);
+  });
+}
+
+// ── Game Logic ─────────────────────────────────────────────────
+function guessLetter(letter) {
+  if (gameOver || guessedLetters[letter] !== undefined) return;
+  const count = letterCounts[letter] || 0;
+  const btn   = document.getElementById('key-'   + letter);
+  const fc    = document.getElementById('freq-'  + letter);
+  const cls   = currentTeam === 0 ? 'boys' : 'girls';
+
+  if (count > 0) {
+    scores[currentTeam] += count;
+    guessedLetters[letter] = { team: currentTeam, correct: true };
+    document.querySelectorAll(`.blank-cell[data-char="${letter}"]`).forEach(c => {
+      c.classList.add('revealed', 'by-' + cls);
+    });
+    if (btn) { btn.classList.add('hit-' + cls); btn.disabled = true; }
+    if (fc)  fc.className = 'freq-cell scored-' + cls;
+    updateScoreDisplay();
+    showPtsAnimation(currentTeam, count);
+    checkWin();
+  } else {
+    guessedLetters[letter] = { team: currentTeam, correct: false };
+    if (btn) { btn.classList.add('missed'); btn.disabled = true; }
+    if (fc)  fc.className = 'freq-cell missed';
+    currentTeam = 1 - currentTeam;
+  }
+  updateTurnUI();
+}
+
+function passTurn() {
+  if (gameOver) return;
+  currentTeam = 1 - currentTeam;
+  updateTurnUI();
+}
+
+function checkWin() {
+  const allDone = [...phrase].every(ch => !/[A-Z]/.test(ch) || guessedLetters[ch]?.correct);
+  if (!allDone) return;
+  gameOver = true; disableAllKeys();
+  if (scores[0] > scores[1]) {
+    setStatus(`🏆 ${teamNames[0]} Win!  ${scores[0]}–${scores[1]}`, 'win');
+  } else if (scores[1] > scores[0]) {
+    setStatus(`🏆 ${teamNames[1]} Win!  ${scores[1]}–${scores[0]}`, 'win');
+  } else {
+    setStatus(`🤝 It's a Tie!  ${scores[0]}–${scores[1]}`, 'draw');
+  }
+}
+
+// ── UI Helpers ─────────────────────────────────────────────────
+function updateTurnUI() {
+  const c0 = document.getElementById('card-0');
+  const c1 = document.getElementById('card-1');
+  const arrow = document.getElementById('turn-arrow');
+  const kbLabel = document.getElementById('keyboard-label');
+  if (currentTeam === 0) {
+    c0.className = 'team-card active-boys';
+    c1.className = 'team-card inactive';
+    arrow.textContent = '⬅️';
+    kbLabel.textContent = `⌨️ Guess a Letter — ${teamNames[0]}'s Turn`;
+  } else {
+    c0.className = 'team-card inactive';
+    c1.className = 'team-card active-girls';
+    arrow.textContent = '➡️';
+    kbLabel.textContent = `⌨️ Guess a Letter — ${teamNames[1]}'s Turn`;
+  }
+}
+
+function updateScoreDisplay() {
+  document.getElementById('score-0').textContent = scores[0];
+  document.getElementById('score-1').textContent = scores[1];
+}
+
+function showPtsAnimation(team, pts) {
+  const card = document.getElementById('card-' + team);
+  const pop  = document.createElement('div');
+  pop.className   = 'pts-pop ' + (team === 0 ? 'boys-pop' : 'girls-pop');
+  pop.textContent = '+' + pts + (pts === 1 ? ' pt' : ' pts');
+  card.appendChild(pop);
+  setTimeout(() => pop.remove(), 1400);
+}
+
+function revealAllBlanks() {
+  document.querySelectorAll('.blank-cell:not(.revealed)').forEach(c => {
+    c.classList.add('revealed'); c.style.opacity = '0.4';
+  });
+}
+
+function revealAnswer() {
+  if (!confirm('Reveal the full answer to the class?')) return;
+  revealAllBlanks(); gameOver = true; disableAllKeys();
+  const lead = scores[0] > scores[1]
+    ? `🏆 ${teamNames[0]} leads — ${scores[0]}–${scores[1]}`
+    : scores[1] > scores[0]
+    ? `🏆 ${teamNames[1]} leads — ${scores[1]}–${scores[0]}`
+    : `🤝 Tied at ${scores[0]} pts`;
+  setStatus(`Answer: ${phrase}  ·  ${lead}`, 'win');
+}
+
+function disableAllKeys() {
+  document.querySelectorAll('.key-btn').forEach(b => b.disabled = true);
+}
+
+function setStatus(msg, cls) {
+  const el = document.getElementById('status-banner');
+  el.textContent   = msg;
+  el.className     = cls;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function resetGame() {
+  if (!confirm('Start a new game?')) return;
+  document.getElementById('game-screen').style.display  = 'none';
+  document.getElementById('setup-screen').style.display = 'flex';
+  document.getElementById('phrase-input').value = '';
+  document.getElementById('phrase-input').focus();
+}
+
+document.getElementById('phrase-input').addEventListener('keydown', e => {
+  if ((e.shiftKey || e.ctrlKey) && e.key === 'Enter') startGame();
+});
+</script>
+</body>
+</html>
